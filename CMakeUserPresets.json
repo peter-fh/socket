@@ -1,0 +1,107 @@
+{
+  "version": 6,
+  "cmakeMinimumRequired": {
+    "major": 3,
+    "minor": 14,
+    "patch": 0
+  },
+  "configurePresets": [
+    {
+      "name": "dev",
+      "inherits": ["dev-mode", "ci-macos"],
+      "cacheVariables": {
+        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
+        "CMAKE_BUILD_TYPE": "Debug",
+        "CMAKE_CXX_FLAGS_DEBUG": "-O0 -g3 -fno-inline"
+      }
+    },
+    {
+      "name": "coverage",
+      "inherits": ["coverage-darwin", "dev-mode"],
+      "binaryDir": "${sourceDir}/build/coverage",
+      "cacheVariables": {
+        "COVERAGE_TRACE_COMMAND": "lcov;-c;-q;-o;${sourceDir}/build/coverage/coverage.info;-d;${sourceDir}/build/coverage;--include;${sourceDir}/*;--exclude;${sourceDir}/build/coverage/_deps/*;--ignore-errors;unsupported,inconsistent,format",
+        "COVERAGE_HTML_COMMAND": "lcov;--remove;${sourceDir}/build/coverage/coverage.info;*/test/*;*/_deps/*;--ignore-errors;unsupported,inconsistent,format,unused;-o;${sourceDir}/build/coverage/coverage.filtered.info"
+      }
+    }
+  ],
+  "buildPresets": [
+    {
+      "name": "dev",
+      "configurePreset": "dev"
+    },
+    {
+      "name": "coverage",
+      "configurePreset": "coverage"
+    },
+    {
+      "name": "coverage-report",
+      "configurePreset": "coverage",
+      "targets": ["coverage"]
+    }
+  ],
+  "testPresets": [
+    {
+      "name": "all",
+      "configurePreset": "dev",
+      "output": {
+        "outputOnFailure": true,
+        "verbosity": "extra"
+      },
+      "execution": {
+        "stopOnFailure": false
+      }
+    },
+    {
+      "name": "coverage",
+      "configurePreset": "coverage",
+      "output": {
+        "outputOnFailure": true,
+        "verbosity": "extra"
+      },
+      "execution": {
+        "stopOnFailure": false
+      }
+    }
+  ],
+  "workflowPresets": [
+    {
+      "name": "dev",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "dev"
+        },
+        {
+          "type": "build",
+          "name": "dev"
+        },
+        {
+          "type": "test",
+          "name": "all"
+        }
+      ]
+    },
+    {
+      "name": "coverage",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "coverage"
+        },
+        {
+          "type": "build",
+          "name": "coverage"
+        },
+        {
+          "type": "test",
+          "name": "coverage"
+        },
+        {
+          "type": "build",
+          "name": "coverage-report"
+        }
+      ]
+    }
+  ]
+}
