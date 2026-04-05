@@ -16,25 +16,27 @@ include(cmake/variables.cmake)
 
 add_library(
     tcp_socket_lib OBJECT
-    source/lib.cpp
+    src/socket/tcp.cpp
+    src/socket/address.cpp
+    src/socket/error.cpp
 )
 
 target_include_directories(
     tcp_socket_lib ${warning_guard}
     PUBLIC
-    "\$<BUILD_INTERFACE:${tcp_socket_SOURCE_DIR}/source>"
+    "\$<BUILD_INTERFACE:${tcp_socket_SOURCE_DIR}/include>"
 )
 
-target_compile_features(tcp_socket_lib PUBLIC cxx_std_20)
+target_compile_features(tcp_socket_lib PUBLIC cxx_std_23)
 
 # ---- Declare executable ----
 
-add_executable(tcp_socket_exe source/main.cpp)
+add_executable(tcp_socket_exe src/main.cpp)
 add_executable(tcp_socket::exe ALIAS tcp_socket_exe)
 
 set_property(TARGET tcp_socket_exe PROPERTY OUTPUT_NAME tcp_socket)
 
-target_compile_features(tcp_socket_exe PRIVATE cxx_std_20)
+target_compile_features(tcp_socket_exe PRIVATE cxx_std_23)
 
 target_link_libraries(tcp_socket_exe PRIVATE tcp_socket_lib)
 
