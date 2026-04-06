@@ -130,7 +130,6 @@ std::expected<Tcp, Error> Tcp::accept() noexcept
   return connection_socket;
 }
 
-// TODO: Add receive some method for whatever is available
 std::expected<std::vector<std::byte>, Error> Tcp::receive(size_t size) noexcept
 {
   size_t total = 0;
@@ -150,7 +149,7 @@ std::expected<std::vector<std::byte>, Error> Tcp::receive(size_t size) noexcept
   return buff;
 }
 
-std::expected<std::vector<std::byte>, Error> Tcp::receive_available() noexcept
+std::expected<std::pair<std::vector<std::byte>, bool>, Error> Tcp::receive_available() noexcept
 {
   const constexpr size_t size = 4096;
   std::vector<std::byte> data;
@@ -164,10 +163,10 @@ std::expected<std::vector<std::byte>, Error> Tcp::receive_available() noexcept
       if (errno == EWOULDBLOCK || errno == EAGAIN) break;
       return std::unexpected(parse_errno());
     }
-    if (result == 0) break;
+    if (result == 0) return std::pair{data, true};
     data.insert(data.end(), buff.begin(), buff.begin() + static_cast<size_t>(result));
   }
-  return data;
+  return std::pair{data, false};
 }
 
 std::optional<Error> Tcp::send(std::span<const std::byte> buff) noexcept

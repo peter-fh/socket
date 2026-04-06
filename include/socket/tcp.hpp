@@ -27,7 +27,7 @@ public:
   std::optional<Error> listen(int max_requests) noexcept;
   std::expected<Tcp, Error> accept() noexcept;
   std::expected<std::vector<std::byte>, Error> receive(size_t size) noexcept;
-  std::expected<std::vector<std::byte>, Error> receive_available() noexcept;
+  std::expected<std::pair<std::vector<std::byte>, bool>, Error> receive_available() noexcept;
   std::optional<Error> send(std::span<const std::byte> buff) noexcept;
   std::expected<Address, Error> peername() const noexcept;
   std::expected<Address, Error> sockname() const noexcept;

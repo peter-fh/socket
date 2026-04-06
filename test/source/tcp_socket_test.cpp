@@ -172,6 +172,6 @@ TEST_F(TcpSocketTest, ClientServer_Large)
   std::this_thread::sleep_for(std::chrono::milliseconds{5});
   const auto receive_result = connection.receive_available();
   ASSERT_TRUE(receive_result.has_value()) << to_string(receive_result.error());
-  std::string received_message {reinterpret_cast<const char*>(receive_result.value().data()), receive_result.value().size()};
+  std::string received_message {reinterpret_cast<const char*>(receive_result.value().first.data()), receive_result.value().first.size()};
   ASSERT_EQ(received_message, example_json);
 }
