@@ -96,6 +96,7 @@ std::optional<Error> Tcp::bind(Address addr) noexcept
 
   struct timeval timeout{ .tv_sec = 5, .tv_usec = 0 };
   sockopt_result = ::setsockopt(m_handle, SOL_SOCKET, SO_SNDTIMEO, &timeout, sizeof(timeout));
+  if (sockopt_result < 0) return parse_errno();
 
   struct sockaddr_in socket_address = addr.socket_address();
 
@@ -129,7 +130,6 @@ std::expected<Tcp, Error> Tcp::accept() noexcept
   return connection_socket;
 }
 
-// TODO: Handle eagain
 // TODO: Add receive some method for whatever is available
 std::expected<std::vector<std::byte>, Error> Tcp::receive(size_t size) noexcept
 {
@@ -148,6 +148,26 @@ std::expected<std::vector<std::byte>, Error> Tcp::receive(size_t size) noexcept
     total += static_cast<size_t>(res);
   }
   return buff;
+}
+
+std::expected<std::vector<std::byte>, Error> Tcp::receive_available() noexcept
+{
+  const constexpr size_t size = 4096;
+  std::vector<std::byte> data;
+  std::array<std::byte, size> buff;
+  for (;;)
+  {
+    const ssize_t result = ::recv(m_handle, buff.data(), buff.size(), 0);
+    if (result < 0)
+    {
+      if (errno == EINTR) continue;
+      if (errno == EWOULDBLOCK || errno == EAGAIN) break;
+      return std::unexpected(parse_errno());
+    }
+    if (result == 0) break;
+    data.insert(data.end(), buff.begin(), buff.begin() + static_cast<size_t>(result));
+  }
+  return data;
 }
 
 std::optional<Error> Tcp::send(std::span<const std::byte> buff) noexcept
