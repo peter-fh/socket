@@ -19,8 +19,10 @@ public:
 
   Tcp(const Tcp& other) = delete;
   Tcp& operator=(const Tcp& other) = delete;
+
   Tcp(Tcp&& other) noexcept;
   Tcp& operator=(Tcp&& other) noexcept;
+
   std::optional<Error> connect(Address addr) noexcept;
   std::optional<Error> bind(Address addr) noexcept;
   std::optional<Error> listen(int max_requests) noexcept;

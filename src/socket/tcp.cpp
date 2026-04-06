@@ -1,3 +1,4 @@
+#include <cerrno>
 #include <iostream>
 #include <socket/tcp.hpp>
 
@@ -117,7 +118,6 @@ std::expected<int, Error> Tcp::accept() noexcept
   return res;
 }
 
-// TODO: Handle EINTR
 std::expected<std::vector<std::byte>, Error> Tcp::receive(size_t size) noexcept
 {
   size_t total = 0;
@@ -126,21 +126,28 @@ std::expected<std::vector<std::byte>, Error> Tcp::receive(size_t size) noexcept
   while (total < size)
   {
     ssize_t res = ::recv(m_handle, buff.data() + total, size - total, 0);
-    if (res < 0) return std::unexpected(parse_errno());
+    if (res < 0) 
+    {
+      if (errno == EINTR) continue;
+      return std::unexpected(parse_errno());
+    }
     if (res == 0) return std::unexpected(Error::CONNECTION_CLOSED);
     total += static_cast<size_t>(res);
   }
   return buff;
 }
 
-// TODO: Handle EINTR
 std::optional<Error> Tcp::send(std::span<const std::byte> buff) noexcept
 {
   size_t total = 0;
   while (total < buff.size())
   {
     const ssize_t res = ::send(m_handle, buff.data(), buff.size(), 0);
-    if (res < 0) return parse_errno();
+    if (res < 0) 
+    {
+      if (errno == EINTR) continue;
+      return parse_errno();
+    }
     if (res == 0) return Error::CONNECTION_CLOSED;
     total += static_cast<size_t>(res);
   }
