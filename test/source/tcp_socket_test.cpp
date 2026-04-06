@@ -2,6 +2,7 @@
 #include <socket/tcp.hpp>
 #include <span>
 #include <string>
+#include <thread>
 
 class TcpSocketTest : public testing::Test {};
 
@@ -37,6 +38,7 @@ TEST_F(TcpSocketTest, ClientServer)
   EXPECT_FALSE(server.listen(5).has_value());
   const auto connect_result = client.connect(addr);
   EXPECT_FALSE(connect_result.has_value()) << to_string(*connect_result);
+  std::this_thread::sleep_for(std::chrono::milliseconds{10});
   auto res = server.accept();
   EXPECT_TRUE(res.has_value()) << to_string(res.error());
   if (!res.has_value()) return;
@@ -47,6 +49,7 @@ TEST_F(TcpSocketTest, ClientServer)
 
   std::string msg("ping");
   client.send(std::as_bytes(std::span{msg}));
+  std::this_thread::sleep_for(std::chrono::milliseconds{10});
   const auto receive_result = connection.receive(msg.size());
   ASSERT_TRUE(receive_result.has_value()) << to_string(receive_result.error());
   std::string received_message {reinterpret_cast<const char*>(receive_result.value().data()), receive_result.value().size()};
@@ -156,6 +159,7 @@ TEST_F(TcpSocketTest, ClientServer_Large)
   EXPECT_FALSE(server.listen(5).has_value());
   const auto connect_result = client.connect(addr);
   EXPECT_FALSE(connect_result.has_value()) << to_string(*connect_result);
+  std::this_thread::sleep_for(std::chrono::milliseconds{10});
   auto res = server.accept();
   EXPECT_TRUE(res.has_value()) << to_string(res.error());
   if (!res.has_value()) return;
@@ -165,6 +169,7 @@ TEST_F(TcpSocketTest, ClientServer_Large)
   EXPECT_EQ(server.sockname().value(), connection.sockname().value());
 
   EXPECT_FALSE(client.send(std::as_bytes(std::span{example_json})).has_value());
+  std::this_thread::sleep_for(std::chrono::milliseconds{10});
   const auto receive_result = connection.receive(example_json.size());
   ASSERT_TRUE(receive_result.has_value()) << to_string(receive_result.error());
   std::string received_message {reinterpret_cast<const char*>(receive_result.value().data()), receive_result.value().size()};

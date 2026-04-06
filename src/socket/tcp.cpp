@@ -7,6 +7,7 @@
 #include <netinet/in.h>
 #include <netinet/tcp.h>
 #include <unistd.h>
+#include <fcntl.h>
 
 #include <expected>
 #include <optional>
@@ -72,14 +73,17 @@ std::optional<Error> Tcp::open() noexcept
 
 std::optional<Error> Tcp::connect(Address addr) noexcept
 {
+  ssize_t res = ::fcntl(m_handle, F_SETFL, O_NONBLOCK);
+  if (res < 0) return parse_errno();
+
   struct sockaddr_in socket_address = addr.socket_address();
 
   struct timeval timeout{ .tv_sec = 5, .tv_usec = 0 };
   const auto sockopt_result = ::setsockopt(m_handle, SOL_SOCKET, SO_SNDTIMEO, &timeout, sizeof(timeout));
   if (sockopt_result < 0) return parse_errno();
 
-  const auto res = ::connect(m_handle, reinterpret_cast<sockaddr*>(&socket_address), sizeof(socket_address));
-  if (res < 0) return parse_errno();
+  res = ::connect(m_handle, reinterpret_cast<sockaddr*>(&socket_address), sizeof(socket_address));
+  if (res < 0 && errno != EINPROGRESS) return parse_errno();
 
   return std::nullopt;
 }
@@ -104,8 +108,10 @@ std::optional<Error> Tcp::bind(Address addr) noexcept
 
 std::optional<Error> Tcp::listen(int max_requests) noexcept
 {
+  ssize_t res = ::fcntl(m_handle, F_SETFL, O_NONBLOCK);
+  if (res < 0) return parse_errno();
 
-  const auto res = ::listen(m_handle, max_requests);
+  res = ::listen(m_handle, max_requests);
   if (res < 0) return parse_errno();
   return std::nullopt;
 }
@@ -133,7 +139,7 @@ std::expected<std::vector<std::byte>, Error> Tcp::receive(size_t size) noexcept
   while (total < size)
   {
     ssize_t res = ::recv(m_handle, buff.data() + total, size - total, 0);
-    if (res < 0) 
+    if (res < 0)
     {
       if (errno == EINTR) continue;
       return std::unexpected(parse_errno());

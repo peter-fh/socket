@@ -1,7 +1,9 @@
+#include <chrono>
 #include <socket/tcp.hpp>
 #include <gtest/gtest.h>
 #include <span>
 #include <string>
+#include <thread>
 
 class TcpSocketShowcase : public testing::Test {};
 
@@ -14,6 +16,11 @@ std::span<const std::byte> to_buffer(std::string str)
 std::string from_buffer(std::vector<std::byte> buff)
 {
   return {reinterpret_cast<const char*>(buff.data()), buff.size()};
+}
+using namespace std::chrono_literals;
+void wait(std::chrono::milliseconds ms)
+{
+  std::this_thread::sleep_for(ms);
 }
 
 TEST_F(TcpSocketShowcase, Client_Server)
@@ -32,6 +39,9 @@ TEST_F(TcpSocketShowcase, Client_Server)
   // Connect the client to this address
   client.connect(address);
 
+  // Wait for connection
+  wait(5ms);
+
   // Complete the handshake and get the server's new connection socket
   auto accept_result = server.accept();
   Socket::Tcp connection(std::move(*accept_result));
@@ -39,6 +49,9 @@ TEST_F(TcpSocketShowcase, Client_Server)
   // Send the message
   std::string msg("ping");
   client.send(to_buffer(msg));
+
+  // Wait for send
+  wait(5ms);
 
   // Receive the message
   auto receive_result = connection.receive(msg.size());
@@ -50,6 +63,7 @@ TEST_F(TcpSocketShowcase, Client_Server)
   // Reply to the client
   msg = "pong";
   connection.send(to_buffer(msg));
+  wait(5ms);
   receive_result = client.receive(msg.size());
   received_message = from_buffer(receive_result.value());
   ASSERT_EQ(received_message, msg);
