@@ -38,7 +38,9 @@ target_compile_features(tcp_socket_test PRIVATE cxx_std_20)
 
 
 # add_test(NAME tcp_socket_test COMMAND tcp_socket_test)
-gtest_discover_tests(tcp_socket_test)
+gtest_discover_tests(tcp_socket_test
+  EXTRA_ARGS --gtest_color=yes
+)
 
 # ---- End-of-file commands ----
 

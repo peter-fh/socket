@@ -33,14 +33,23 @@ TEST_F(TcpSocketTest, ClientServer)
 {
   Socket::Tcp client;
   Socket::Tcp server;
-  Socket::Address addr("127.0.0.1", 8090);
-  ASSERT_FALSE(client.open().has_value());
-  ASSERT_FALSE(server.open().has_value());
-  ASSERT_FALSE(server.bind(addr).has_value());
-  ASSERT_FALSE(server.listen(5).has_value());
-  ASSERT_FALSE(client.connect(addr).has_value());
+  Socket::Address addr("127.0.0.1", 8088);
+  EXPECT_FALSE(client.open().has_value());
+  EXPECT_FALSE(server.open().has_value());
+  const auto bind_result = server.bind(addr);
+  EXPECT_FALSE(bind_result.has_value()) << to_string(*bind_result);
+  EXPECT_FALSE(server.listen(5).has_value());
+  const auto connect_result = client.connect(addr);
+  EXPECT_FALSE(connect_result.has_value()) << to_string(*connect_result);
   auto res = server.accept();
-  ASSERT_TRUE(res.has_value()) << to_string(res.error());
-  ASSERT_EQ(client.peername().value(), addr);
-  ASSERT_EQ(client.sockname().value(), res.value().peername().value());
+  EXPECT_TRUE(res.has_value()) << to_string(res.error());
+  if (res.has_value())
+  {
+    Socket::Tcp connection(res.value());
+    EXPECT_EQ(client.peername().value(), addr);
+    EXPECT_EQ(client.sockname().value(), connection.peername().value());
+    connection.close();
+  }
+  client.close();
+  server.close();
 }
