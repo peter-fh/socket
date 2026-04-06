@@ -50,7 +50,7 @@ TEST_F(TcpSocketShowcase, ClientServerShowcase)
   // Reply to the client
   msg = "pong";
   connection.send(to_buffer(msg));
-  receive_result = client.recv(msg.size());
+  receive_result = client.receive(msg.size());
   received_message = from_buffer(receive_result.value());
   ASSERT_EQ(received_message, msg);
 }

@@ -51,7 +51,7 @@ TEST_F(TcpSocketTest, ClientServer)
 
   std::string msg("ping");
   client.send(std::as_bytes(std::span{msg}));
-  const auto receive_result = connection.recv(msg.size());
+  const auto receive_result = connection.receive(msg.size());
   ASSERT_TRUE(receive_result.has_value()) << to_string(receive_result.error());
   std::string received_message {reinterpret_cast<const char*>(receive_result.value().data()), receive_result.value().size()};
   ASSERT_EQ(received_message, msg);

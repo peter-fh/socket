@@ -117,19 +117,7 @@ std::expected<int, Error> Tcp::accept() noexcept
   return res;
 }
 
-std::expected<std::vector<std::byte>, Error> Tcp::recv(size_t size) noexcept
-{
-  std::vector<std::byte> buff;
-  buff.resize(size);
-  const auto res = ::recv(m_handle, buff.data(), size, 0);
-  if (res < 0) return std::unexpected(parse_errno());
-  if (res == 0) return std::unexpected(Error::CONNECTION_CLOSED);
-
-  buff.resize(size);
-
-  return buff;
-}
-
+// TODO: Handle EINTR
 std::expected<std::vector<std::byte>, Error> Tcp::receive(size_t size) noexcept
 {
   size_t total = 0;
@@ -145,11 +133,17 @@ std::expected<std::vector<std::byte>, Error> Tcp::receive(size_t size) noexcept
   return buff;
 }
 
-// TODO: handle partial sends
+// TODO: Handle EINTR
 std::optional<Error> Tcp::send(std::span<const std::byte> buff) noexcept
 {
-  const auto res = ::send(m_handle, buff.data(), buff.size(), 0);
-  if (res < 0) return parse_errno();
+  size_t total = 0;
+  while (total < buff.size())
+  {
+    const ssize_t res = ::send(m_handle, buff.data(), buff.size(), 0);
+    if (res < 0) return parse_errno();
+    if (res == 0) return Error::CONNECTION_CLOSED;
+    total += static_cast<size_t>(res);
+  }
   return std::nullopt;
 }
 
@@ -191,6 +185,4 @@ std::expected<Address, Error> Tcp::sockname() const noexcept
 }
 
 } // namespace Socket
-
-
 
