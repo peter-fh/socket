@@ -130,6 +130,22 @@ std::expected<std::vector<std::byte>, Error> Tcp::recv(size_t size) noexcept
   return buff;
 }
 
+std::expected<std::vector<std::byte>, Error> Tcp::receive(size_t size) noexcept
+{
+  size_t total = 0;
+  std::vector<std::byte> buff;
+  buff.resize(size);
+  while (total < size)
+  {
+    ssize_t res = ::recv(m_handle, buff.data() + total, size - total, 0);
+    if (res < 0) return std::unexpected(parse_errno());
+    if (res == 0) return std::unexpected(Error::CONNECTION_CLOSED);
+    total += static_cast<size_t>(res);
+  }
+  return buff;
+}
+
+// TODO: handle partial sends
 std::optional<Error> Tcp::send(std::span<const std::byte> buff) noexcept
 {
   const auto res = ::send(m_handle, buff.data(), buff.size(), 0);

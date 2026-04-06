@@ -41,7 +41,7 @@ TEST_F(TcpSocketShowcase, ClientServerShowcase)
   client.send(to_buffer(msg));
 
   // Receive the message
-  auto receive_result = connection.recv(msg.size());
+  auto receive_result = connection.receive(msg.size());
   std::string received_message(from_buffer(receive_result.value()));
 
   // Assert that we received the same message that was sent
