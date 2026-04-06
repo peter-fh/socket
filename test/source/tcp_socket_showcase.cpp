@@ -16,7 +16,7 @@ std::string from_buffer(std::vector<std::byte> buff)
   return {reinterpret_cast<const char*>(buff.data()), buff.size()};
 }
 
-TEST_F(TcpSocketShowcase, ClientServerShowcase)
+TEST_F(TcpSocketShowcase, Client_Server)
 {
   // Initiate and open the sockets
   Socket::Tcp client;
@@ -34,7 +34,7 @@ TEST_F(TcpSocketShowcase, ClientServerShowcase)
 
   // Complete the handshake and get the server's new connection socket
   auto accept_result = server.accept();
-  Socket::Tcp connection(accept_result.value());
+  Socket::Tcp connection(std::move(*accept_result));
 
   // Send the message
   std::string msg("ping");

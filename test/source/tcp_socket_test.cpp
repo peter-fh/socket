@@ -8,8 +8,6 @@ class TcpSocketTest : public testing::Test {};
 TEST_F(TcpSocketTest, Open)
 {
   Socket::Tcp socket;
-  //const auto res = socket.open();
-  //ASSERT_FALSE(res.has_value()) << to_string(*res);
   int fd = socket.handle();
   ASSERT_LE(0, fd);
   printf("FD: %d\n", fd);
@@ -18,8 +16,6 @@ TEST_F(TcpSocketTest, Open)
 TEST_F(TcpSocketTest, Connect)
 {
   Socket::Tcp socket;
-  //const auto open_result = socket.open();
-  //ASSERT_FALSE(open_result.has_value()) << to_string(*open_result);
 
   using namespace std::string_view_literals;
   Socket::Address addr("104.18.26.120"sv, 80); // >nslookup example.com
@@ -44,7 +40,7 @@ TEST_F(TcpSocketTest, ClientServer)
   auto res = server.accept();
   EXPECT_TRUE(res.has_value()) << to_string(res.error());
   if (!res.has_value()) return;
-  Socket::Tcp connection(res.value());
+  Socket::Tcp connection(std::move(res.value()));
   EXPECT_EQ(client.peername().value(), addr);
   EXPECT_EQ(client.sockname().value(), connection.peername().value());
   EXPECT_EQ(server.sockname().value(), connection.sockname().value());
@@ -163,7 +159,7 @@ TEST_F(TcpSocketTest, ClientServer_Large)
   auto res = server.accept();
   EXPECT_TRUE(res.has_value()) << to_string(res.error());
   if (!res.has_value()) return;
-  Socket::Tcp connection(res.value());
+  Socket::Tcp connection(std::move(res.value()));
   EXPECT_EQ(client.peername().value(), addr);
   EXPECT_EQ(client.sockname().value(), connection.peername().value());
   EXPECT_EQ(server.sockname().value(), connection.sockname().value());

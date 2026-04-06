@@ -17,6 +17,7 @@ namespace Socket
 
 Tcp::Tcp() noexcept
 {
+  m_handle = -1;
   const auto res = open();
   if (res.has_value())
   {
@@ -43,13 +44,20 @@ Tcp::Tcp(Tcp&& other) noexcept
 }
 Tcp& Tcp::operator=(Tcp&& other) noexcept
 {
-  m_handle = other.m_handle;
-  other.m_handle = -1;
+  if (this != &other)
+  {
+    if (*this)
+    {
+      close();
+    }
+    m_handle = other.m_handle;
+    other.m_handle = -1;
+  }
   return *this;
 }
 
 Tcp::operator bool() const noexcept {
-  return m_handle != -1;
+  return m_handle >= 0;
 }
 Tcp::Tcp(int handle) noexcept : m_handle(handle) {}
 
@@ -64,16 +72,13 @@ std::optional<Error> Tcp::open() noexcept
 
 std::optional<Error> Tcp::connect(Address addr) noexcept
 {
-  struct sockaddr_in socket_address;
-  socket_address.sin_family = AF_INET;
-  socket_address.sin_addr.s_addr = addr.url();
-  socket_address.sin_port = addr.port();
+  struct sockaddr_in socket_address = addr.socket_address();
 
   struct timeval timeout{ .tv_sec = 5, .tv_usec = 0 };
   const auto sockopt_result = ::setsockopt(m_handle, SOL_SOCKET, SO_SNDTIMEO, &timeout, sizeof(timeout));
   if (sockopt_result < 0) return parse_errno();
 
-  const auto res = ::connect(m_handle, reinterpret_cast<sockaddr*>(&socket_address), sizeof(sockaddr));
+  const auto res = ::connect(m_handle, reinterpret_cast<sockaddr*>(&socket_address), sizeof(socket_address));
   if (res < 0) return parse_errno();
 
   return std::nullopt;
@@ -88,12 +93,9 @@ std::optional<Error> Tcp::bind(Address addr) noexcept
   struct timeval timeout{ .tv_sec = 5, .tv_usec = 0 };
   sockopt_result = ::setsockopt(m_handle, SOL_SOCKET, SO_SNDTIMEO, &timeout, sizeof(timeout));
 
-  struct sockaddr_in socket_address;
-  socket_address.sin_family = AF_INET;
-  socket_address.sin_addr.s_addr = addr.url();
-  socket_address.sin_port = addr.port();
+  struct sockaddr_in socket_address = addr.socket_address();
 
-  const auto bind_result = ::bind(m_handle, reinterpret_cast<sockaddr*>(&socket_address), sizeof(sockaddr));
+  const auto bind_result = ::bind(m_handle, reinterpret_cast<sockaddr*>(&socket_address), sizeof(socket_address));
   if (bind_result < 0)
     return parse_errno();
 
@@ -108,16 +110,21 @@ std::optional<Error> Tcp::listen(int max_requests) noexcept
   return std::nullopt;
 }
 
-std::expected<int, Error> Tcp::accept() noexcept
+std::expected<Tcp, Error> Tcp::accept() noexcept
 {
   sockaddr_in peer_address;
   socklen_t peer_socket_length = sizeof(peer_address);
   const auto res = ::accept(m_handle, reinterpret_cast<sockaddr*>(&peer_address), &peer_socket_length);
   if (res < 0) return std::unexpected(parse_errno());
 
-  return res;
+  Tcp connection_socket(res);
+  assert(connection_socket.peername()->socket_address().sin_addr.s_addr == peer_address.sin_addr.s_addr);
+  assert(connection_socket.peername()->socket_address().sin_port == peer_address.sin_port);
+  return connection_socket;
 }
 
+// TODO: Handle eagain
+// TODO: Add receive some method for whatever is available
 std::expected<std::vector<std::byte>, Error> Tcp::receive(size_t size) noexcept
 {
   size_t total = 0;
@@ -142,8 +149,8 @@ std::optional<Error> Tcp::send(std::span<const std::byte> buff) noexcept
   size_t total = 0;
   while (total < buff.size())
   {
-    const ssize_t res = ::send(m_handle, buff.data(), buff.size(), 0);
-    if (res < 0) 
+    const ssize_t res = ::send(m_handle, buff.data() + total, buff.size() - total, 0);
+    if (res < 0)
     {
       if (errno == EINTR) continue;
       return parse_errno();
@@ -157,6 +164,7 @@ std::optional<Error> Tcp::send(std::span<const std::byte> buff) noexcept
 std::optional<Error> Tcp::close() noexcept
 {
   const auto res = ::close(m_handle);
+  m_handle = -1;
   if (res < 0)
   {
     return parse_errno();

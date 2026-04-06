@@ -51,6 +51,16 @@ uint32_t Address::url() const
   return static_cast<uint32_t>(m_data & 0xFFFFFFFF);
 }
 
+sockaddr_in Address::socket_address() const
+{
+
+  struct sockaddr_in socket_address;
+  socket_address.sin_family = AF_INET;
+  socket_address.sin_addr.s_addr = url();
+  socket_address.sin_port = port();
+  return socket_address;
+}
+
 bool Address::operator==(const Address& other) const
 {
   return this->m_data == other.m_data;
