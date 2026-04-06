@@ -20,6 +20,7 @@ public:
   bool operator==(const Address& other) const;
 
 private:
+  // Data is a single bit to ensure it fits on a 64 bit register
   uint64_t m_data;
 };
 

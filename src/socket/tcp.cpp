@@ -1,3 +1,4 @@
+#include <iostream>
 #include <socket/tcp.hpp>
 
 #include <arpa/inet.h>
@@ -13,7 +14,42 @@
 namespace Socket
 {
 
-Tcp::Tcp() noexcept = default;
+Tcp::Tcp() noexcept
+{
+  const auto res = open();
+  if (res.has_value())
+  {
+    std::cout << "Failed to open: " << to_string(*res) << "\n";
+    assert(false);
+  }
+}
+
+Tcp::~Tcp() noexcept
+{
+  if (*this)
+  {
+    const auto res = close();
+    if (res.has_value())
+    {
+      std::cout << "Failed to close: " << to_string(*res) << "\n";
+    }
+  }
+}
+Tcp::Tcp(Tcp&& other) noexcept 
+{
+  m_handle = other.m_handle;
+  other.m_handle = -1;
+}
+Tcp& Tcp::operator=(Tcp&& other) noexcept
+{
+  m_handle = other.m_handle;
+  other.m_handle = -1;
+  return *this;
+}
+
+Tcp::operator bool() const noexcept {
+  return m_handle != -1;
+}
 Tcp::Tcp(int handle) noexcept : m_handle(handle) {}
 
 std::optional<Error> Tcp::open() noexcept
@@ -71,16 +107,14 @@ std::optional<Error> Tcp::listen(int max_requests) noexcept
   return std::nullopt;
 }
 
-std::expected<Socket::Tcp, Error> Tcp::accept() noexcept
+std::expected<int, Error> Tcp::accept() noexcept
 {
   sockaddr_in peer_address;
   socklen_t peer_socket_length = sizeof(peer_address);
   const auto res = ::accept(m_handle, reinterpret_cast<sockaddr*>(&peer_address), &peer_socket_length);
   if (res < 0) return std::unexpected(parse_errno());
 
-  Tcp result_socket(res);
-  assert(result_socket.peername() == Address(peer_address));
-  return result_socket;
+  return res;
 }
 
 std::expected<std::vector<std::byte>, Error> Tcp::recv(size_t size) noexcept

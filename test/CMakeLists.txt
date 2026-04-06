@@ -30,6 +30,7 @@ set(BUILD_GTEST ON CACHE BOOL "" FORCE)
 
 add_executable(tcp_socket_test
     source/tcp_socket_test.cpp
+    source/tcp_socket_showcase.cpp
     source/main.cpp
 )
 set_property(TARGET tcp_socket_test PROPERTY CXX_CLANG_TIDY "")
