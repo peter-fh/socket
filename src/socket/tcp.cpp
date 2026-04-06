@@ -83,6 +83,26 @@ std::expected<Socket::Tcp, Error> Tcp::accept() noexcept
   return result_socket;
 }
 
+std::expected<std::vector<std::byte>, Error> Tcp::recv(size_t size) noexcept
+{
+  std::vector<std::byte> buff;
+  buff.resize(size);
+  const auto res = ::recv(m_handle, buff.data(), size, 0);
+  if (res < 0) return std::unexpected(parse_errno());
+  if (res == 0) return std::unexpected(Error::CONNECTION_CLOSED);
+
+  buff.resize(size);
+
+  return buff;
+}
+
+std::optional<Error> Tcp::send(std::span<const std::byte> buff) noexcept
+{
+  const auto res = ::send(m_handle, buff.data(), buff.size(), 0);
+  if (res < 0) return parse_errno();
+  return std::nullopt;
+}
+
 std::optional<Error> Tcp::close() noexcept
 {
   const auto res = ::close(m_handle);

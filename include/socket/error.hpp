@@ -28,6 +28,7 @@ enum class Error
   CONNECTION_REFUSED,                // ECONNREFUSED
   CONNECTION_RESET,                  // ECONNRESET
   CONNECTION_TIMED_OUT,              // ETIMEDOUT
+  CONNECTION_CLOSED,                 // Return value of 0
 
   HOST_UNREACHABLE,                  // EHOSTUNREACH
   NETWORK_UNREACHABLE,               // ENETUNREACH
