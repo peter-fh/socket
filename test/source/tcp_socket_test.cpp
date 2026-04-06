@@ -33,7 +33,7 @@ TEST_F(TcpSocketTest, ClientServer)
 {
   Socket::Tcp client;
   Socket::Tcp server;
-  Socket::Address addr("127.0.0.1", 8088);
+  Socket::Address addr("127.0.0.1", 8008);
   EXPECT_FALSE(client.open().has_value());
   EXPECT_FALSE(server.open().has_value());
   const auto bind_result = server.bind(addr);
@@ -48,6 +48,7 @@ TEST_F(TcpSocketTest, ClientServer)
     Socket::Tcp connection(res.value());
     EXPECT_EQ(client.peername().value(), addr);
     EXPECT_EQ(client.sockname().value(), connection.peername().value());
+    EXPECT_EQ(server.sockname().value(), connection.sockname().value());
     connection.close();
   }
   client.close();

@@ -13,16 +13,14 @@ public:
   Address(std::string_view address);
   Address(std::string_view address, uint16_t port);
 
-  bool valid();
-  uint32_t url();
-  uint16_t port();
+  bool valid() const;
+  uint32_t url() const;
+  uint16_t port() const;
 
   bool operator==(const Address& other) const;
 
 private:
-  uint32_t m_url;
-  uint16_t m_port;
-  bool m_isValid;
+  uint64_t m_data;
 };
 
-}
+} // namespace Socket

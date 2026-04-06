@@ -43,6 +43,7 @@ enum class Error
 };
 
 Error parse_errno();
-}
+
+} // namespace Socket
 
 std::string_view to_string(Socket::Error err);

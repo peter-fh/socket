@@ -7,9 +7,9 @@
 #include <span>
 #include <vector>
 
-
 namespace Socket
 {
+
 class Tcp
 {
 public:
@@ -23,13 +23,12 @@ public:
   std::expected<std::vector<std::byte>, Error> receive(size_t size=1024) noexcept;
   std::optional<Error> send(std::span<const std::byte> buff) noexcept;
   std::optional<Error> close() noexcept;
-  std::expected<Address, Error> peername() noexcept;
-  std::expected<Address, Error> sockname() noexcept;
-  int handle() noexcept;
+  std::expected<Address, Error> peername() const noexcept;
+  std::expected<Address, Error> sockname() const noexcept;
+  int handle() const noexcept;
 
 private:
   int m_handle;
-  friend class TcpSocketTest;
 };
 
-}
+} // namespace Socket
