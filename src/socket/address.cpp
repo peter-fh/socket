@@ -5,7 +5,9 @@
 #include <string>
 
 #define VALID_BIT (1ULL << 63)
-#define PORT_SHIFT 32;
+#define PORT_SHIFT 32
+#define PORT_MASK 0xFFFF
+#define URL_MASK 0xFFFFFFFF
 namespace Socket
 {
 
@@ -43,12 +45,12 @@ bool Address::valid() const
 
 uint16_t Address::port() const
 {
-  return static_cast<uint16_t>((m_data >> 32) & 0xFFFF);
+  return static_cast<uint16_t>((m_data >> PORT_SHIFT) & PORT_MASK);
 }
 
 uint32_t Address::url() const
 {
-  return static_cast<uint32_t>(m_data & 0xFFFFFFFF);
+  return static_cast<uint32_t>(m_data & URL_MASK);
 }
 
 sockaddr_in Address::socket_address() const
