@@ -29,9 +29,11 @@ include(GoogleTest)
 set(BUILD_GTEST ON CACHE BOOL "" FORCE)
 
 add_executable(tcp_socket_test
-    source/tcp_socket_test.cpp
-    source/tcp_socket_showcase.cpp
-    source/main.cpp
+  unit/http_request.cpp
+  unit/http_url.cpp
+  system/tcp.cpp
+  showcase/tcp.cpp
+  main.cpp
 )
 set_property(TARGET tcp_socket_test PROPERTY CXX_CLANG_TIDY "")
 target_link_libraries(tcp_socket_test PRIVATE tcp_socket_lib GTest::gtest)

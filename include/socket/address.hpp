@@ -1,10 +1,11 @@
 #pragma once
 #include <cstdint>
+#include <string>
 #include <string_view>
 
 struct sockaddr_in;
 
-namespace Socket
+namespace peterfh::socket
 {
 class Address
 {
@@ -14,7 +15,7 @@ public:
   Address(std::string_view address, uint16_t port);
 
   bool valid() const;
-  uint32_t url() const;
+  std::string url() const;
   uint16_t port() const;
   sockaddr_in socket_address() const;
 

@@ -8,7 +8,7 @@
 #define PORT_SHIFT 32
 #define PORT_MASK 0xFFFF
 #define URL_MASK 0xFFFFFFFF
-namespace Socket
+namespace peterfh::socket
 {
 
 Address::Address(sockaddr_in addr)
@@ -45,12 +45,15 @@ bool Address::valid() const
 
 uint16_t Address::port() const
 {
-  return static_cast<uint16_t>((m_data >> PORT_SHIFT) & PORT_MASK);
+  return ntohs(static_cast<uint16_t>((m_data >> PORT_SHIFT) & PORT_MASK));
 }
 
-uint32_t Address::url() const
+std::string Address::url() const
 {
-  return static_cast<uint32_t>(m_data & URL_MASK);
+  const auto url_data = static_cast<uint32_t>(m_data & URL_MASK);
+  char buf[INET_ADDRSTRLEN];
+  inet_ntop(AF_INET, &url_data, buf, sizeof(buf));
+  return std::string{buf};
 }
 
 sockaddr_in Address::socket_address() const
@@ -58,8 +61,8 @@ sockaddr_in Address::socket_address() const
 
   struct sockaddr_in socket_address;
   socket_address.sin_family = AF_INET;
-  socket_address.sin_addr.s_addr = url();
-  socket_address.sin_port = port();
+  socket_address.sin_addr.s_addr = static_cast<uint32_t>(m_data & URL_MASK);
+  socket_address.sin_port = static_cast<uint16_t>((m_data >> PORT_SHIFT) & PORT_MASK);
   return socket_address;
 }
 

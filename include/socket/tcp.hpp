@@ -1,13 +1,13 @@
+#include <peterfh.hpp>
 #pragma once
+
 #include <socket/error.hpp>
 #include <socket/address.hpp>
 
-#include <expected>
-#include <optional>
 #include <span>
 #include <vector>
 
-namespace Socket
+namespace peterfh::socket
 {
 
 class Tcp
@@ -22,15 +22,15 @@ public:
   Tcp(Tcp&& other) noexcept;
   Tcp& operator=(Tcp&& other) noexcept;
 
-  std::optional<Error> connect(Address addr) noexcept;
-  std::optional<Error> bind(Address addr) noexcept;
-  std::optional<Error> listen(int max_requests) noexcept;
-  std::expected<Tcp, Error> accept() noexcept;
-  std::expected<std::vector<std::byte>, Error> receive(size_t size) noexcept;
-  std::expected<std::pair<std::vector<std::byte>, bool>, Error> receive_available() noexcept;
-  std::optional<Error> send(std::span<const std::byte> buff) noexcept;
-  std::expected<Address, Error> peername() const noexcept;
-  std::expected<Address, Error> sockname() const noexcept;
+  Result<Void, Error> connect(Address addr) noexcept;
+  Result<Void, Error> bind(Address addr) noexcept;
+  Result<Void, Error> listen(int max_requests) noexcept;
+  Result<Tcp, Error> accept() noexcept;
+  Result<std::vector<std::byte>, Error> receive(size_t size) noexcept;
+  Result<std::pair<std::vector<std::byte>, bool>, Error> receive_available() noexcept;
+  Result<Void, Error> send(std::span<const std::byte> buff) noexcept;
+  Result<Address, Error> peername() const noexcept;
+  Result<Address, Error> sockname() const noexcept;
   int handle() const noexcept;
   explicit operator bool() const noexcept;
 
@@ -38,8 +38,8 @@ private:
   Tcp(int handle) noexcept;
 
   // Open and close are handled via RAII and should not be called by the integrator
-  std::optional<Error> open() noexcept;
-  std::optional<Error> close() noexcept;
+  Result<Void, Error> open() noexcept;
+  Result<Void, Error> close() noexcept;
 
   int m_handle;
 };

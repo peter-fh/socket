@@ -1,7 +1,7 @@
 #include <socket/error.hpp>
 #include <cerrno>
 
-namespace Socket
+namespace peterfh::socket
 {
 
 Error parse_errno()
@@ -65,92 +65,105 @@ Error parse_errno()
   }
 }
 
+template <typename T>
+Result<T, Error> construct_errno_result()
+{
+  const Error err = parse_errno();
+  return Result<T, Error>(err);
+}
+
 } // namespace Socket
 
-std::string_view to_string(Socket::Error err)
+namespace peterfh
+{
+std::string_view to_string(socket::Error err)
 {
   using namespace std::string_view_literals;
 
   switch (err)
   {
-    case Socket::Error::UNSPECIFIED:
+    case socket::Error::UNSPECIFIED:
       return "UNSPECIFIED"sv;
 
-    case Socket::Error::INVALID_ADDRESS_FAMILY:
+    case socket::Error::INVALID_ADDRESS_FAMILY:
       return "INVALID_ADDRESS_FAMILY [EAFNOSUPPORT]"sv;
 
-    case Socket::Error::TYPE_OR_PROTOCOL_DENIED:
+    case socket::Error::TYPE_OR_PROTOCOL_DENIED:
       return "TYPE_OR_PROTOCOL_DENIED [EACCES]"sv;
 
-    case Socket::Error::PROCESS_FILE_DESCRIPTOR_LIST_FULL:
+    case socket::Error::PROCESS_FILE_DESCRIPTOR_LIST_FULL:
       return "PROCESS_FILE_DESCRIPTOR_LIST_FULL [EMFILE]"sv;
 
-    case Socket::Error::SYSTEM_FILE_DESCRIPTOR_LIST_FULL:
+    case socket::Error::SYSTEM_FILE_DESCRIPTOR_LIST_FULL:
       return "SYSTEM_FILE_DESCRIPTOR_LIST_FULL [ENFILE]"sv;
 
-    case Socket::Error::INSUFFICIENT_BUFFER_SPACE:
+    case socket::Error::INSUFFICIENT_BUFFER_SPACE:
       return "INSUFFICIENT_BUFFER_SPACE [ENOBUFS]"sv;
 
-    case Socket::Error::INSUFFICIENT_MEMORY:
+    case socket::Error::INSUFFICIENT_MEMORY:
       return "INSUFFICIENT_MEMORY [ENOMEM]"sv;
 
-    case Socket::Error::PROTOCOL_NOT_SUPPORTED:
+    case socket::Error::PROTOCOL_NOT_SUPPORTED:
       return "PROTOCOL_NOT_SUPPORTED [EPROTONOSUPPORT]"sv;
 
-    case Socket::Error::SOCKET_TYPE_NOT_SUPPORTED:
+    case socket::Error::SOCKET_TYPE_NOT_SUPPORTED:
       return "SOCKET_TYPE_NOT_SUPPORTED [EPROTOTYPE]"sv;
 
-    case Socket::Error::ADDRESS_IN_USE:
+    case socket::Error::ADDRESS_IN_USE:
       return "ADDRESS_IN_USE [EADDRINUSE]"sv;
 
-    case Socket::Error::ADDRESS_NOT_AVAILABLE:
+    case socket::Error::ADDRESS_NOT_AVAILABLE:
       return "ADDRESS_NOT_AVAILABLE [EADDRNOTAVAIL]"sv;
 
-    case Socket::Error::CONNECTION_ALREADY_IN_PROGRESS:
+    case socket::Error::CONNECTION_ALREADY_IN_PROGRESS:
       return "CONNECTION_ALREADY_IN_PROGRESS [EALREADY]"sv;
 
-    case Socket::Error::CONNECTION_IN_PROGRESS:
+    case socket::Error::CONNECTION_IN_PROGRESS:
       return "CONNECTION_IN_PROGRESS [EINPROGRESS]"sv;
 
-    case Socket::Error::SOCKET_ALREADY_CONNECTED:
+    case socket::Error::SOCKET_ALREADY_CONNECTED:
       return "SOCKET_ALREADY_CONNECTED [EISCONN]"sv;
 
-    case Socket::Error::SOCKET_NOT_CONNECTED:
+    case socket::Error::SOCKET_NOT_CONNECTED:
       return "SOCKET_NOT_CONNECTED [ENOTCONN]"sv;
 
-    case Socket::Error::CONNECTION_REFUSED:
+    case socket::Error::CONNECTION_REFUSED:
       return "CONNECTION_REFUSED [ECONNREFUSED]"sv;
 
-    case Socket::Error::CONNECTION_RESET:
+    case socket::Error::CONNECTION_RESET:
       return "CONNECTION_RESET [ECONNRESET]"sv;
 
-    case Socket::Error::CONNECTION_TIMED_OUT:
+    case socket::Error::CONNECTION_TIMED_OUT:
       return "CONNECTION_TIMED_OUT [ETIMEDOUT]"sv;
 
-    case Socket::Error::HOST_UNREACHABLE:
+    case socket::Error::HOST_UNREACHABLE:
       return "HOST_UNREACHABLE [EHOSTUNREACH]"sv;
 
-    case Socket::Error::NETWORK_UNREACHABLE:
+    case socket::Error::NETWORK_UNREACHABLE:
       return "NETWORK_UNREACHABLE [ENETUNREACH]"sv;
 
-    case Socket::Error::BROKEN_PIPE:
+    case socket::Error::BROKEN_PIPE:
       return "BROKEN_PIPE [EPIPE]"sv;
 
-    case Socket::Error::INVALID_FILE_DESCRIPTOR:
+    case socket::Error::INVALID_FILE_DESCRIPTOR:
       return "INVALID_FILE_DESCRIPTOR [EBADF]"sv;
 
-    case Socket::Error::INVALID_ARGUMENT:
+    case socket::Error::INVALID_ARGUMENT:
       return "INVALID_ARGUMENT [EINVAL]"sv;
 
-    case Socket::Error::NOT_A_SOCKET:
+    case socket::Error::NOT_A_SOCKET:
       return "NOT_A_SOCKET [ENOTSOCK]"sv;
 
-    case Socket::Error::OPERATION_NOT_SUPPORTED:
+    case socket::Error::OPERATION_NOT_SUPPORTED:
       return "OPERATION_NOT_SUPPORTED [EOPNOTSUPP]"sv;
 
-    case Socket::Error::WOULD_BLOCK:
+    case socket::Error::WOULD_BLOCK:
       return "WOULD_BLOCK [EWOULDBLOCK/EAGAIN]"sv;
+
+    case socket::Error::CONNECTION_CLOSED:
+      return "CONNECTION_CLOSED"sv;
   }
 
   return "UNKNOWN"sv;
+}
 }

@@ -1,9 +1,12 @@
+#include <peterfh.hpp>
 #pragma once
 #include <string_view>
 
-namespace Socket
+namespace peterfh
 {
 
+namespace socket
+{
 enum class Error
 {
   UNSPECIFIED,
@@ -45,6 +48,7 @@ enum class Error
 
 Error parse_errno();
 
-} // namespace Socket
+} // namespace peterfh::socket
 
-std::string_view to_string(Socket::Error err);
+std::string_view to_string(socket::Error err);
+}
