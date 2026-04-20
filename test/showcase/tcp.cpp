@@ -86,14 +86,14 @@ TEST_F(TcpSocketShowcase, Client_Server_ErrorHandling)
   auto result = server.bind(address);
   if (!result.successful())
   {
-    std::cout << "Bind failed with error: " << to_string(result.err()) << std::endl;
+    std::cout << "Bind failed with error: " << to_string(result.status()) << std::endl;
     return;
   }
 
   result = server.listen(5);
   if (!result.successful())
   {
-    std::cout << "Listen failed with error: " << to_string(result.err()) << std::endl;
+    std::cout << "Listen failed with error: " << to_string(result.status()) << std::endl;
     return;
   }
 
@@ -101,7 +101,7 @@ TEST_F(TcpSocketShowcase, Client_Server_ErrorHandling)
   result = client.connect(address);
   if (!result.successful())
   {
-    std::cout << "Connect failed with error: " << to_string(result.err()) << std::endl;
+    std::cout << "Connect failed with error: " << to_string(result.status()) << std::endl;
     return;
   }
 
@@ -112,7 +112,7 @@ TEST_F(TcpSocketShowcase, Client_Server_ErrorHandling)
   auto accept_result = server.accept();
   if (!accept_result.successful())
   {
-    std::cout << "Accept failed with error: " << to_string(accept_result.err()) << std::endl;
+    std::cout << "Accept failed with error: " << to_string(accept_result.status()) << std::endl;
     return;
   }
   socket::Tcp connection(std::move(*accept_result));
@@ -122,7 +122,7 @@ TEST_F(TcpSocketShowcase, Client_Server_ErrorHandling)
   result = client.send(to_buffer(msg));
   if (!result.successful())
   {
-    std::cout << "Send failed with error: " << to_string(result.err()) << std::endl;
+    std::cout << "Send failed with error: " << to_string(result.status()) << std::endl;
     return;
   }
 
@@ -133,7 +133,7 @@ TEST_F(TcpSocketShowcase, Client_Server_ErrorHandling)
   auto receive_result = connection.receive(msg.size());
   if (!receive_result.successful())
   {
-    std::cout << "Receive failed with error: " << to_string(receive_result.err()) << std::endl;
+    std::cout << "Receive failed with error: " << to_string(receive_result.status()) << std::endl;
     return;
   }
   std::string received_message(from_buffer(*receive_result));
@@ -146,14 +146,14 @@ TEST_F(TcpSocketShowcase, Client_Server_ErrorHandling)
   result = connection.send(to_buffer(msg));
   if (!result.successful())
   {
-    std::cout << "Send failed with error: " << to_string(result.err()) << std::endl;
+    std::cout << "Send failed with error: " << to_string(result.status()) << std::endl;
     return;
   }
   wait(5ms);
   receive_result = client.receive(msg.size());
   if (!receive_result.successful())
   {
-    std::cout << "Receive failed with error: " << to_string(receive_result.err()) << std::endl;
+    std::cout << "Receive failed with error: " << to_string(receive_result.status()) << std::endl;
     return;
   }
   received_message = from_buffer(*receive_result);

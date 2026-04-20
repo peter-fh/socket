@@ -89,7 +89,7 @@ TEST_F(HttpRequestTestUnit, Data_EmptyHeaderValue)
   ASSERT_EQ(expectedData, requestString);
 }
 
-TEST_F(HttpRequestTestUnit, DataManyHeaders)
+TEST_F(HttpRequestTestUnit, Data_ManyHeaders)
 {
   const char* url = "http://example.com/resource";
   http::Request req(http::Method::GET, url, {

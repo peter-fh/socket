@@ -32,6 +32,7 @@ add_executable(tcp_socket_test
   unit/http_request.cpp
   unit/http_url.cpp
   system/tcp.cpp
+  system/http.cpp
   showcase/tcp.cpp
   main.cpp
 )

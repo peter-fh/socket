@@ -109,6 +109,12 @@ std::string Url::str()
   return url;
 }
 
+
+socket::Address Url::addr()
+{
+  return m_addr;
+}
+
 std::string Url::to_ip(std::string_view domain)
 {
   std::string domain_data{domain};

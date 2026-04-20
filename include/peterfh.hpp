@@ -5,6 +5,7 @@
 #pragma once
 #include <memory>
 #include <optional>
+#include <utility>
 
 // Helper macros
 #if defined(_DEBUG) || !defined(NDEBUG)
@@ -49,13 +50,13 @@ namespace peterfh
 
 struct Void {};
 
-template <typename TValue, typename TError>
+template <typename TValue, typename TStatus>
 class Result
 {
 public:
 	Result();
 	Result(TValue value);
-	Result(TError err);
+	Result(TStatus err);
 
 	bool successful() const;
 	bool has_value() const;
@@ -67,63 +68,63 @@ public:
 	TValue* operator->();
 
 	// Available when successful is false
-	TError err() const;
+	TStatus status() const;
 private:
 	std::optional<TValue> m_value;
-	std::optional<TError> m_error;
+	TStatus m_error;
 };
 
 /*
 * Inline template implementations
 */
 
-template <typename TValue, typename TError>
-Result<TValue, TError>::Result() {}
+template <typename TValue, typename TStatus>
+Result<TValue, TStatus>::Result() {}
 
-template <typename TValue, typename TError>
-Result<TValue, TError>::Result(TValue value) : m_value(std::move(value)), m_error(std::nullopt) {}
+template <typename TValue, typename TStatus>
+Result<TValue, TStatus>::Result(TValue value) : m_value(std::move(value)), m_error(static_cast<TStatus>(0)) {}
 
-template <typename TValue, typename TError>
-Result<TValue, TError>::Result(TError error) : m_value(std::nullopt), m_error(error) {}
+template <typename TValue, typename TStatus>
+Result<TValue, TStatus>::Result(TStatus error) : m_value(std::nullopt), m_error(error) {}
 
-template <typename TValue, typename TError>
-bool Result<TValue, TError>::successful() const
+template <typename TValue, typename TStatus>
+bool Result<TValue, TStatus>::successful() const
 {
-	return !m_error.has_value();
+	return std::to_underlying(m_error) == 0;
 }
 
-template <typename TValue, typename TError>
-bool Result<TValue, TError>::has_value() const
+template <typename TValue, typename TStatus>
+bool Result<TValue, TStatus>::has_value() const
 {
 	return m_value.has_value();
 }
 
-template <typename TValue, typename TError>
-TError Result<TValue, TError>::err() const
+template <typename TValue, typename TStatus>
+TStatus Result<TValue, TStatus>::status() const
 {
-	return *m_error;
+	return m_error;
 }
 
-template <typename TValue, typename TError>
-const TValue& Result<TValue, TError>::operator*() const
-{
-	return *m_value;
-}
-
-template <typename TValue, typename TError>
-TValue& Result<TValue, TError>::operator*()
+template <typename TValue, typename TStatus>
+const TValue& Result<TValue, TStatus>::operator*() const
 {
 	return *m_value;
 }
 
-template <typename TValue, typename TError>
-const TValue* Result<TValue, TError>::operator->() const
+template <typename TValue, typename TStatus>
+TValue& Result<TValue, TStatus>::operator*()
+{
+	return *m_value;
+}
+
+template <typename TValue, typename TStatus>
+const TValue* Result<TValue, TStatus>::operator->() const
 {
 	return std::addressof(*m_value);
 }
 
-template <typename TValue, typename TError>
-TValue* Result<TValue, TError>::operator->()
+template <typename TValue, typename TStatus>
+TValue* Result<TValue, TStatus>::operator->()
 {
 	return std::addressof(*m_value);
 }

@@ -21,6 +21,7 @@ add_library(
     src/socket/error.cpp
     src/http/url.cpp
     src/http/request.cpp
+    src/http/client.cpp
 )
 
 target_include_directories(

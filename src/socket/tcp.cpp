@@ -17,7 +17,7 @@ Tcp::Tcp() noexcept
 {
   m_handle = -1;
   [[maybe_unused]] const auto res = open();
-  PETERFH_ASSERT(res.successful(), "Failed to open: " << to_string(res.err()));
+  PETERFH_ASSERT(res.successful(), "Failed to open: " << to_string(res.status()));
 }
 
 Tcp::~Tcp() noexcept
@@ -25,7 +25,7 @@ Tcp::~Tcp() noexcept
   if (*this)
   {
     [[maybe_unused]] const auto res = close();
-    PETERFH_ASSERT(res.successful(), "Failed to close: " << to_string(res.err()));
+    PETERFH_ASSERT(res.successful(), "Failed to close: " << to_string(res.status()));
   }
 }
 Tcp::Tcp(Tcp&& other) noexcept 
@@ -40,7 +40,7 @@ Tcp& Tcp::operator=(Tcp&& other) noexcept
     if (*this)
     {
       [[maybe_unused]] const auto res = close();
-      PETERFH_ASSERT(res.successful(), "Failed to close: " << to_string(res.err()));
+      PETERFH_ASSERT(res.successful(), "Failed to close: " << to_string(res.status()));
     }
     m_handle = other.m_handle;
     other.m_handle = -1;

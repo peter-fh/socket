@@ -24,7 +24,7 @@ TEST_F(TcpSocketTest, Connect)
   using namespace std::string_view_literals;
   socket::Address addr("104.18.26.120"sv, 80); // >nslookup example.com
   const auto connect_result = socket.connect(addr);
-  ASSERT_TRUE(connect_result.successful()) << to_string(connect_result.err());
+  ASSERT_TRUE(connect_result.successful()) << to_string(connect_result.status());
   printf("Passed connect\n");
 }
 
@@ -37,13 +37,13 @@ TEST_F(TcpSocketTest, ClientServer)
   socket::Address addr("127.0.0.1", 8008);
 
   const auto bind_result = server.bind(addr);
-  EXPECT_TRUE(bind_result.successful()) << to_string(bind_result.err());
+  EXPECT_TRUE(bind_result.successful()) << to_string(bind_result.status());
   EXPECT_TRUE(server.listen(5).successful());
   const auto connect_result = client.connect(addr);
-  EXPECT_TRUE(connect_result.successful()) << to_string(connect_result.err());
+  EXPECT_TRUE(connect_result.successful()) << to_string(connect_result.status());
   std::this_thread::sleep_for(std::chrono::milliseconds{1});
   auto res = server.accept();
-  EXPECT_TRUE(res.successful()) << to_string(res.err());
+  EXPECT_TRUE(res.successful()) << to_string(res.status());
   if (!res.successful()) return;
   socket::Tcp connection(std::move(*res));
   EXPECT_EQ(*client.peername(), addr);
@@ -54,7 +54,7 @@ TEST_F(TcpSocketTest, ClientServer)
   client.send(std::as_bytes(std::span{msg}));
   std::this_thread::sleep_for(std::chrono::milliseconds{1});
   const auto receive_result = connection.receive(msg.size());
-  ASSERT_TRUE(receive_result.successful()) << to_string(receive_result.err());
+  ASSERT_TRUE(receive_result.successful()) << to_string(receive_result.status());
   std::string received_message {reinterpret_cast<const char*>(receive_result->data()), receive_result->size()};
   ASSERT_EQ(received_message, msg);
 }
@@ -158,13 +158,13 @@ TEST_F(TcpSocketTest, ClientServer_Large)
   socket::Address addr("127.0.0.1", 8008);
 
   const auto bind_result = server.bind(addr);
-  EXPECT_TRUE(bind_result.successful()) << to_string(bind_result.err());
+  EXPECT_TRUE(bind_result.successful()) << to_string(bind_result.status());
   EXPECT_TRUE(server.listen(5).successful());
   const auto connect_result = client.connect(addr);
-  EXPECT_TRUE(connect_result.successful()) << to_string(connect_result.err());
+  EXPECT_TRUE(connect_result.successful()) << to_string(connect_result.status());
   std::this_thread::sleep_for(std::chrono::milliseconds{1});
   auto res = server.accept();
-  EXPECT_TRUE(res.successful()) << to_string(res.err());
+  EXPECT_TRUE(res.successful()) << to_string(res.status());
   if (!res.successful()) return;
   socket::Tcp connection(std::move(*res));
   EXPECT_EQ(*client.peername(), addr);
@@ -174,7 +174,7 @@ TEST_F(TcpSocketTest, ClientServer_Large)
   EXPECT_TRUE(client.send(std::as_bytes(std::span{example_json})).successful());
   std::this_thread::sleep_for(std::chrono::milliseconds{5});
   const auto receive_result = connection.receive_available();
-  ASSERT_TRUE(receive_result.successful()) << to_string(receive_result.err());
+  ASSERT_TRUE(receive_result.successful()) << to_string(receive_result.status());
   std::string received_message {reinterpret_cast<const char*>(receive_result->first.data()), receive_result->first.size()};
   ASSERT_EQ(received_message, example_json);
 }
