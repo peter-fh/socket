@@ -1,3 +1,4 @@
+#include "socket/poll.hpp"
 #include "gtest/gtest.h"
 #include <socket/tcp.hpp>
 #include <span>
@@ -35,13 +36,15 @@ TEST_F(TcpSocketTest, ClientServer)
   ASSERT_TRUE(client);
   ASSERT_TRUE(server);
   socket::Address addr("127.0.0.1", 8008);
+  socket::Poll poller;
 
   const auto bind_result = server.bind(addr);
   EXPECT_TRUE(bind_result.successful()) << to_string(bind_result.status());
   EXPECT_TRUE(server.listen(5).successful());
   const auto connect_result = client.connect(addr);
   EXPECT_TRUE(connect_result.successful()) << to_string(connect_result.status());
-  std::this_thread::sleep_for(std::chrono::milliseconds{1});
+  auto poll_result = poller.wait(server, socket::PollEvent::Readable, 5);
+  EXPECT_TRUE(poll_result.successful()) << to_string(poll_result.status());
   auto res = server.accept();
   EXPECT_TRUE(res.successful()) << to_string(res.status());
   if (!res.successful()) return;
@@ -52,7 +55,8 @@ TEST_F(TcpSocketTest, ClientServer)
 
   std::string msg("ping");
   client.send(std::as_bytes(std::span{msg}));
-  std::this_thread::sleep_for(std::chrono::milliseconds{1});
+  poll_result = poller.wait(connection, socket::PollEvent::Readable, 5);
+  EXPECT_TRUE(poll_result.successful()) << to_string(poll_result.status());
   const auto receive_result = connection.receive(msg.size());
   ASSERT_TRUE(receive_result.successful()) << to_string(receive_result.status());
   std::string received_message {reinterpret_cast<const char*>(receive_result->data()), receive_result->size()};
@@ -156,13 +160,15 @@ TEST_F(TcpSocketTest, ClientServer_Large)
   ASSERT_TRUE(client);
   ASSERT_TRUE(server);
   socket::Address addr("127.0.0.1", 8008);
+  socket::Poll poller;
 
   const auto bind_result = server.bind(addr);
   EXPECT_TRUE(bind_result.successful()) << to_string(bind_result.status());
   EXPECT_TRUE(server.listen(5).successful());
   const auto connect_result = client.connect(addr);
   EXPECT_TRUE(connect_result.successful()) << to_string(connect_result.status());
-  std::this_thread::sleep_for(std::chrono::milliseconds{1});
+  auto poll_result = poller.wait(server, socket::PollEvent::Readable, 5);
+  EXPECT_TRUE(poll_result.successful()) << to_string(poll_result.status());
   auto res = server.accept();
   EXPECT_TRUE(res.successful()) << to_string(res.status());
   if (!res.successful()) return;
@@ -172,7 +178,8 @@ TEST_F(TcpSocketTest, ClientServer_Large)
   EXPECT_EQ(*server.sockname(), *connection.sockname());
 
   EXPECT_TRUE(client.send(std::as_bytes(std::span{example_json})).successful());
-  std::this_thread::sleep_for(std::chrono::milliseconds{5});
+  poll_result = poller.wait(connection, socket::PollEvent::Readable, 5);
+  EXPECT_TRUE(poll_result.successful()) << to_string(poll_result.status());
   const auto receive_result = connection.receive_available();
   ASSERT_TRUE(receive_result.successful()) << to_string(receive_result.status());
   std::string received_message {reinterpret_cast<const char*>(receive_result->first.data()), receive_result->first.size()};

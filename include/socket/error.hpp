@@ -43,7 +43,10 @@ enum class Error
   NOT_A_SOCKET,                      // ENOTSOCK
   OPERATION_NOT_SUPPORTED,           // EOPNOTSUPP
 
-  WOULD_BLOCK                        // EWOULDBLOCK / EAGAIN
+  WOULD_BLOCK,                       // EWOULDBLOCK / EAGAIN
+
+  // Start of custom errors
+  TIMEOUT_REACHED,
 };
 
 Error parse_errno();

@@ -162,6 +162,9 @@ std::string_view to_string(socket::Error err)
 
     case socket::Error::CONNECTION_CLOSED:
       return "CONNECTION_CLOSED"sv;
+
+    case socket::Error::TIMEOUT_REACHED:
+      return "TIMEOUT_REACHED"sv;
   }
 
   return "UNKNOWN"sv;

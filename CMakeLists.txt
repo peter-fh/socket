@@ -19,7 +19,9 @@ add_library(
     src/socket/tcp.cpp
     src/socket/address.cpp
     src/socket/error.cpp
+    src/socket/poll.cpp
     src/http/url.cpp
+    src/http/error.cpp
     src/http/request.cpp
     src/http/client.cpp
 )

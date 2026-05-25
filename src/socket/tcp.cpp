@@ -149,7 +149,9 @@ Result<std::pair<std::vector<std::byte>, bool>, Error> Tcp::receive_available() 
   std::array<std::byte, size> buff;
   for (;;)
   {
+    PETERFH_LOG("Start recv");
     const ssize_t result = ::recv(m_handle, buff.data(), buff.size(), 0);
+    PETERFH_LOG("End recv");
     if (result < 0)
     {
       if (errno == EINTR) continue;
@@ -157,6 +159,7 @@ Result<std::pair<std::vector<std::byte>, bool>, Error> Tcp::receive_available() 
       return parse_errno();
     }
     if (result == 0) return std::pair{data, true};
+    PETERFH_LOG("Result: " << result);
     data.insert(data.end(), buff.begin(), buff.begin() + static_cast<size_t>(result));
   }
   return std::pair{data, false};

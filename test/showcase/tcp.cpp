@@ -1,3 +1,4 @@
+#include "socket/poll.hpp"
 #include <chrono>
 #include <ostream>
 #include <socket/tcp.hpp>
@@ -32,6 +33,7 @@ TEST_F(TcpSocketShowcase, Client_Server)
   // Initiate and open the sockets
   socket::Tcp client;
   socket::Tcp server;
+  socket::Poll poller;
 
   // Setup the address that will be used for the connection
   socket::Address address("127.0.0.1", 8008);
@@ -44,7 +46,7 @@ TEST_F(TcpSocketShowcase, Client_Server)
   client.connect(address);
 
   // Wait for connection
-  wait(5ms);
+  poller.wait(server, socket::PollEvent::Readable);
 
   // Complete the handshake and get the server's new connection socket
   auto accept_result = server.accept();
@@ -55,7 +57,7 @@ TEST_F(TcpSocketShowcase, Client_Server)
   client.send(to_buffer(msg));
 
   // Wait for send
-  wait(5ms);
+  poller.wait(connection, socket::PollEvent::Readable);
 
   // Receive the message
   auto receive_result = connection.receive(msg.size());
@@ -67,7 +69,7 @@ TEST_F(TcpSocketShowcase, Client_Server)
   // Reply to the client
   msg = "pong";
   connection.send(to_buffer(msg));
-  wait(5ms);
+  poller.wait(client, socket::PollEvent::Readable);
   receive_result = client.receive(msg.size());
   received_message = from_buffer(*receive_result);
   ASSERT_EQ(received_message, msg);
@@ -78,6 +80,7 @@ TEST_F(TcpSocketShowcase, Client_Server_ErrorHandling)
   // Initiate and open the sockets
   socket::Tcp client;
   socket::Tcp server;
+  socket::Poll poller;
 
   // Setup the address that will be used for the connection
   socket::Address address("127.0.0.1", 8008);
@@ -106,7 +109,17 @@ TEST_F(TcpSocketShowcase, Client_Server_ErrorHandling)
   }
 
   // Wait for connection
-  wait(5ms);
+  auto poll_result = poller.wait(server, socket::PollEvent::Readable, 5);
+  if (!poll_result.successful())
+  {
+    std::cout << "Poll failed with error: " << to_string(result.status()) << std::endl;
+    return;
+  }
+  if ((*poll_result) != socket::PollEvent::Readable)
+  {
+    std::cout << "Socket is not readable." << std::endl;
+    return;
+  }
 
   // Complete the handshake and get the server's new connection socket
   auto accept_result = server.accept();
@@ -127,7 +140,17 @@ TEST_F(TcpSocketShowcase, Client_Server_ErrorHandling)
   }
 
   // Wait for send
-  wait(5ms);
+  poll_result = poller.wait(connection, socket::PollEvent::Readable, 5);
+  if (!poll_result.successful())
+  {
+    std::cout << "Poll failed with error: " << to_string(result.status()) << std::endl;
+    return;
+  }
+  if ((*poll_result) != socket::PollEvent::Readable)
+  {
+    std::cout << "Connection is not readable." << std::endl;
+    return;
+  }
 
   // Receive the message
   auto receive_result = connection.receive(msg.size());
@@ -149,7 +172,17 @@ TEST_F(TcpSocketShowcase, Client_Server_ErrorHandling)
     std::cout << "Send failed with error: " << to_string(result.status()) << std::endl;
     return;
   }
-  wait(5ms);
+  poll_result = poller.wait(client, socket::PollEvent::Readable, 5);
+  if (!poll_result.successful())
+  {
+    std::cout << "Poll failed with error: " << to_string(result.status()) << std::endl;
+    return;
+  }
+  if ((*poll_result) != socket::PollEvent::Readable)
+  {
+    std::cout << "Connection is not readable." << std::endl;
+    return;
+  }
   receive_result = client.receive(msg.size());
   if (!receive_result.successful())
   {

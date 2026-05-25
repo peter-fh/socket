@@ -47,21 +47,22 @@ Url::Url(std::string_view url)
       return;
     }
     m_domain = domain;
-    m_addr = socket::Address(to_ip(domain), port);
   }
   else if (path_pos != std::string::npos)
   {
     std::string_view domain = url.substr(0, path_pos);
     m_domain = domain;
-    m_addr = socket::Address(to_ip(domain));
   }
   else
   {
     m_domain = url;
-    m_addr = socket::Address(to_ip(url));
-    return;
   }
-  m_path = url.substr(path_pos);
+  uint16_t port = m_protocol == Protocol::HTTPS ? 443 : 80;
+  m_addr = socket::Address(to_ip(m_domain), port);
+  if (path_pos != std::string::npos)
+  {
+    m_path = url.substr(path_pos);
+  }
 
 }
 
@@ -101,10 +102,6 @@ std::string Url::str()
 
   url += protocol();
   url += domain();
-  if (m_addr.port())
-  {
-    url += ":" + port();
-  }
   url += path();
   return url;
 }

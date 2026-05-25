@@ -16,6 +16,15 @@
       }
     },
     {
+      "name": "rel",
+      "inherits": ["dev-mode", "ci-macos"],
+      "cacheVariables": {
+        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
+        "CMAKE_BUILD_TYPE": "Release",
+        "CMAKE_CXX_FLAGS_DEBUG": "-O0 -g3 -fno-inline"
+      }
+    },
+    {
       "name": "coverage",
       "inherits": ["coverage-darwin", "dev-mode"],
       "binaryDir": "${sourceDir}/build/coverage",
@@ -31,6 +40,10 @@
       "configurePreset": "dev"
     },
     {
+      "name": "rel",
+      "configurePreset": "rel"
+    },
+    {
       "name": "coverage",
       "configurePreset": "coverage"
     },
@@ -42,8 +55,19 @@
   ],
   "testPresets": [
     {
-      "name": "all",
+      "name": "dev",
       "configurePreset": "dev",
+      "output": {
+        "outputOnFailure": true,
+        "verbosity": "extra"
+      },
+      "execution": {
+        "stopOnFailure": false
+      }
+    },
+    {
+      "name": "rel",
+      "configurePreset": "rel",
       "output": {
         "outputOnFailure": true,
         "verbosity": "extra"
@@ -78,7 +102,24 @@
         },
         {
           "type": "test",
-          "name": "all"
+          "name": "dev"
+        }
+      ]
+    },
+    {
+      "name": "rel",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "rel"
+        },
+        {
+          "type": "build",
+          "name": "rel"
+        },
+        {
+          "type": "test",
+          "name": "rel"
         }
       ]
     },
